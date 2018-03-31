@@ -7,17 +7,35 @@ from flask_script import Manager
 from flask_moment import Moment
 from flask_bootstrap import Bootstrap
 from datetime import datetime
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import Required  
+from flask import flash
 
 
 app = Flask(__name__)  ## __name__ 比较多的用于__main__,程序主模块或者包名字, 直接启动当前.py脚本时，则__name__==__main__，否则等于__name__==模块名字
+app.config['SECRET_KEY']='hard to guess'
 moment = Moment(app)
 bootstrap = Bootstrap(app)
 manager = Manager(app)
 
+class NameForm(FlaskForm):
+    name = StringField("What is your name?", validators=[Required()])
+    age = StringField("How old are you?", validators=[Required()])
+    submit = SubmitField('Submit')
 
-@app.route('/')
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', current_time=datetime.utcnow())
+    name = None
+    form = NameForm()  # 这里flask会将收到的post自动解析为form
+    print(form.name.data, form.age.data) # 这里一般的处理逻辑是取出form的值，对该值做一些逻辑处理,然后在模板里在展现处理结果
+    if form.validate_on_submit():
+         name = form.name.data
+         form.name.data = ""
+         form.age.data = ""
+         flash("you should  import something!")
+    return render_template('index.html', current_time=datetime.utcnow(), form=form, name=name)
 
 @app.route("/user/<name>")
 def user(name):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-from flask import Flask
+from flask import Flask, session, url_for
 from flask import request  
 from flask import make_response, redirect, render_template
 from flask_script import Manager
@@ -31,11 +31,11 @@ def index():
     form = NameForm()  # 这里flask会将收到的post自动解析为form
     print(form.name.data, form.age.data) # 这里一般的处理逻辑是取出form的值，对该值做一些逻辑处理,然后在模板里在展现处理结果
     if form.validate_on_submit():
-         name = form.name.data
-         form.name.data = ""
-         form.age.data = ""
+         session['name'] = form.name.data
+         session['age'] = form.age.data
          flash("you should  import something!")
-    return render_template('index.html', current_time=datetime.utcnow(), form=form, name=name)
+         return redirect(url_for('index')) 
+    return render_template('index.html', current_time=datetime.utcnow(), form=form, name=session.get('name'))
 
 @app.route("/user/<name>")
 def user(name):
